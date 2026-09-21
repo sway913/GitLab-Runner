@@ -1,0 +1,17 @@
+# NBot Windows 计划任务配置样例。
+# 复制为 setup-nbot.conf 后填写重新签发的本机凭据。
+# setup-nbot.ps1 会校验格式并将正式配置 ACL 限制为 GUI 用户、SYSTEM 和 Administrators。
+
+nbot_root=.
+nbot_bin=.\nbot.exe
+
+# 必填：32 位十六进制字符串。
+device_id=替换为重新签发的DeviceId
+
+# 必填：URL-safe base64 字符集 A-Za-z0-9_-。
+mid=替换为重新签发的MID
+
+gui_user=替换为Windows本地用户名
+start_delay_seconds=30
+log_retention_days=14
+task_name=NBot

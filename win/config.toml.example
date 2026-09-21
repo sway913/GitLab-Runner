@@ -1,0 +1,20 @@
+# Windows GitLab Runner 配置样例。
+# 复制为 config.toml 后，通过 GitLab 为 Windows 平台独立注册 Runner。
+# 不要复用 Linux Runner 的 token、ID、名称或平台 tags。
+
+concurrent = 1
+check_interval = 0
+shutdown_timeout = 0
+
+[session_server]
+  session_timeout = 1800
+
+[[runners]]
+  name = "group_windows_amd64_ci"
+  url = "https://gitlab.example.invalid"
+  executor = "shell"
+  shell = "pwsh"
+  # token 由 GitLab Runner 注册流程写入，禁止提交真实值。
+
+  [runners.cache]
+    MaxUploadedArchiveSize = 0

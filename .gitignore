@@ -1,0 +1,25 @@
+# 本机 Runner 身份与凭据
+**/config.toml
+**/setup-nbot.conf
+**/.runner_system_id
+
+# 运行产物
+**/logs/
+**/builds/
+**/cache/
+
+# 平台二进制由目标机器部署，不进入源码仓库
+linux/gitlab-runner-linux-amd64
+linux/nbot
+win/gitlab-runner.exe
+win/nbot.exe
+
+# Linux setup 脚本在目标机器生成的启动器
+linux/start-gitlab-runner.sh
+linux/start-nbot.sh
+
+# 常见临时文件
+*.log
+*.tmp
+Thumbs.db
+.DS_Store

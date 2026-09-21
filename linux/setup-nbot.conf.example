@@ -1,0 +1,37 @@
+# setup-nbot.conf.example
+#
+# NBot 开机自启动配置示例。跨机器部署时：
+#   cp setup-nbot.conf.example setup-nbot.conf
+#   chmod 600 setup-nbot.conf
+#   # 编辑 setup-nbot.conf 填入本机 device_id / mid
+#   ./setup-nbot.sh
+#
+# 格式：每行一个 key=value；# 开头为注释；空行忽略。
+# 脚本不会执行本文件内容（非 shell source），因此不会引入注入风险。
+
+# NBot 目录。相对路径相对于本配置文件所在目录；. 表示配置文件同目录。
+nbot_root=.
+
+# nbot 可执行文件。相对路径相对于 nbot_root；默认 <nbot_root>/nbot。
+nbot_bin=./nbot
+
+# 本机 NBot 凭据（必填）。属于机密，请勿提交到仓库。
+# device_id：32 位十六进制字符串。
+device_id=替换为本机 device_id
+# mid：URL-safe base64 字符集（A-Za-z0-9_-）。
+mid=替换为本机 mid
+
+# 登录桌面后延迟启动的秒数（0-3600）。
+start_delay_seconds=40
+
+# NBot 文件日志保留天数（>=1）。
+log_retention_days=14
+
+# systemd --user 服务名。
+service_name=nbot
+
+# 是否启用 loginctl enable-linger（1=启用，0=不启用）。
+enable_linger=1
+
+# 运行 NBot 的用户，必须是执行本脚本的当前用户。留空则用当前用户。
+# gui_user=

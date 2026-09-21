@@ -1,0 +1,17 @@
+# Linux GitLab Runner 配置示例。
+# 请复制为实际 config.toml，并通过 GitLab 注册 Linux Runner 后填写认证信息。
+# 不要把真实 token 提交到代码仓库或复制当前目录的 Windows config.toml。
+
+concurrent = 1
+check_interval = 0
+shutdown_timeout = 0
+
+[[runners]]
+  name = "group_linux_amd64_ci"
+  url = "https://gitlab.example.invalid"
+  executor = "shell"
+  shell = "bash"
+  # token = "由 GitLab 注册流程提供"
+
+  [runners.cache]
+    MaxUploadedArchiveSize = 0
