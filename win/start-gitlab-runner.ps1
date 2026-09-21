@@ -1,6 +1,6 @@
 ﻿[CmdletBinding()]
 param(
-    [string]$RunnerRoot = $PSScriptRoot,
+    [string]$RunnerRoot = "",
     [string]$ConfigFile = "",
     [ValidateRange(1, 3650)]
     [int]$LogRetentionDays = 14
@@ -8,6 +8,10 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
+
+if ([string]::IsNullOrWhiteSpace($RunnerRoot)) {
+    $RunnerRoot = $PSScriptRoot
+}
 
 $RunnerRoot = [IO.Path]::GetFullPath($RunnerRoot)
 if ([string]::IsNullOrWhiteSpace($ConfigFile)) {
@@ -91,6 +95,9 @@ try {
     if (Get-Variable PSNativeCommandUseErrorActionPreference -ErrorAction SilentlyContinue) {
         $PSNativeCommandUseErrorActionPreference = $false
     }
+    # gitlab-runner 把正常日志写到 stderr；在 Windows PowerShell 5.1 下 2>&1 会把每行 stderr
+    # 变成 ErrorRecord，配合 ErrorActionPreference=Stop 会在第一行日志就终止。此处降级为 Continue。
+    $ErrorActionPreference = "Continue"
     & $RunnerExe run --config $ConfigFile 2>&1 |
         ForEach-Object { Write-RunnerLog $_.ToString() }
     $exitCode = $LASTEXITCODE

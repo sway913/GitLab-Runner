@@ -9,7 +9,7 @@
 [CmdletBinding(SupportsShouldProcess, ConfirmImpact = "Medium")]
 param(
     [string]$GuiUserName = $env:USERNAME,
-    [string]$RunnerRoot = $PSScriptRoot,
+    [string]$RunnerRoot = "",
     [string]$ConfigFile = "",
     [string]$TaskName = "GitLab Runner GUI",
     [ValidateRange(0, 3600)]
@@ -25,6 +25,13 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
+
+if ([string]::IsNullOrWhiteSpace($GuiUserName)) {
+    $GuiUserName = $env:USERNAME
+}
+if ([string]::IsNullOrWhiteSpace($RunnerRoot)) {
+    $RunnerRoot = $PSScriptRoot
+}
 
 function Test-IsAdministrator {
     $identity = [Security.Principal.WindowsIdentity]::GetCurrent()

@@ -21,14 +21,16 @@
 ```powershell
 Set-ExecutionPolicy -Scope Process Bypass
 cd C:\GitLab-Runner
-.\setup-gitlab-gui-runner.ps1 -GuiUserName "ai_builder" -WhatIf
+.\setup-gitlab-gui-runner.ps1 -WhatIf
 ```
 
 确认无误后，以管理员 PowerShell 应用：
 
 ```powershell
-.\setup-gitlab-gui-runner.ps1 -GuiUserName "ai_builder"
+.\setup-gitlab-gui-runner.ps1
 ```
+
+未指定 `-GuiUserName` 时，脚本默认使用当前 PowerShell 用户；如需为其他本机用户注册任务，再显式传入该参数。
 
 默认行为：登录后延迟 60 秒启动；异常退出后 1 分钟重启；只允许一个任务实例；关闭当前电源方案的 AC 睡眠。脚本不会修改显示器超时，也不会默认关闭休眠。专用 CI 机器需要关闭休眠时显式使用 `-DisableHibernate`。
 
@@ -47,7 +49,7 @@ notepad .\setup-nbot.conf
 .\setup-nbot.ps1
 ```
 
-`setup-nbot.conf` 使用严格的 `key=value` 格式；脚本不会执行配置内容。应用时会将配置、启动器和 NBot 日志 ACL 限制为目标 GUI 用户、SYSTEM 和本机 Administrators。
+`setup-nbot.conf` 使用严格的 `key=value` 格式；脚本不会执行配置内容。`gui_user` 为可选项，留空时默认使用运行 setup 脚本的当前 Windows 用户。应用时会将配置、启动器和 NBot 日志 ACL 限制为目标 GUI 用户、SYSTEM 和本机 Administrators。
 
 NBot 当前接口要求通过 `--mid` 启动，因此 MID 在进程运行期间仍可能被具有进程检查权限的管理员看到；它不会出现在计划任务参数、源码或普通日志中。
 

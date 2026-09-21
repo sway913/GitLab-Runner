@@ -1,10 +1,13 @@
 ﻿[CmdletBinding(SupportsShouldProcess, ConfirmImpact = "Medium")]
 param(
-    [string]$ConfigFile = (Join-Path $PSScriptRoot "setup-nbot.conf"),
+    [string]$ConfigFile = "",
     [switch]$StartNow
 )
 
 Set-StrictMode -Version Latest
+if ([string]::IsNullOrWhiteSpace($ConfigFile)) {
+    $ConfigFile = Join-Path $PSScriptRoot "setup-nbot.conf"
+}
 $ErrorActionPreference = "Stop"
 
 function Test-IsAdministrator {

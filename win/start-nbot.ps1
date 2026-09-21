@@ -1,9 +1,12 @@
 ﻿[CmdletBinding()]
 param(
-    [string]$ConfigFile = (Join-Path $PSScriptRoot "setup-nbot.conf")
+    [string]$ConfigFile = ""
 )
 
 Set-StrictMode -Version Latest
+if ([string]::IsNullOrWhiteSpace($ConfigFile)) {
+    $ConfigFile = Join-Path $PSScriptRoot "setup-nbot.conf"
+}
 $ErrorActionPreference = "Stop"
 
 function Import-NBotConfig {
@@ -102,6 +105,7 @@ $LogFile = Join-Path $LogDir ("nbot-{0}.log" -f (Get-Date -Format "yyyyMMdd-HHmm
 function Protect-LogLine {
     param([AllowEmptyString()][string]$Line)
     $safe = $Line.Replace($mid, "<redacted-mid>")
+    $safe = $safe -replace '(?i)([?&](?:access-token|zm-token)=)[^&\s"]+', '$1<redacted>'
     return ($safe -replace '(?i)--mid=[A-Za-z0-9_-]+', '--mid=<redacted>')
 }
 
@@ -129,6 +133,8 @@ $exitCode = 100
 Push-Location $NBotRoot
 try {
     Write-NBotLog "Starting nbot start --mid=<redacted>"
+    # nbot 将正常日志写到 stderr；Windows PowerShell 5.1 合并 stderr 后会触发 Stop。
+    $ErrorActionPreference = "Continue"
     & $NBotExe start "--mid=$mid" 2>&1 |
         ForEach-Object { Write-NBotLog $_.ToString() }
     $exitCode = $LASTEXITCODE

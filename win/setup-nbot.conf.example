@@ -11,7 +11,8 @@ device_id=替换为重新签发的DeviceId
 # 必填：URL-safe base64 字符集 A-Za-z0-9_-。
 mid=替换为重新签发的MID
 
-gui_user=替换为Windows本地用户名
+# 可选：Windows 本地用户名；留空时使用运行 setup-nbot.ps1 的当前用户。
+gui_user=
 start_delay_seconds=30
 log_retention_days=14
 task_name=NBot

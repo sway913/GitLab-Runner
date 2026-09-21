@@ -1,0 +1,119 @@
+# Hyper-V + Ubuntu22.04 搭建双向剪贴板+文件互传（MSTSC+xrdp）
+> 适用：Windows11 Hyper-V，Ubuntu22.04虚拟机，实现**文字双向复制粘贴**、**Windows与虚拟机文件互传**
+> 原理：不依赖Hyper-V自带VMConnect的增强会话（容易失效），改用xrdp远程桌面+mstsc连接，挂载宿主机磁盘实现文件拖拽
+
+## 一、前置准备
+1. Windows：已开启Hyper-V，创建**第2代**Ubuntu22.04虚拟机
+2. 虚拟机配置：内存建议≥4G，网络使用默认虚拟交换机（NAT）
+3. 虚拟机系统：Ubuntu22.04桌面版，已完成系统安装
+
+## 二、Ubuntu虚拟机内操作（全部在Hyper-V控制台窗口执行）
+### 1. 更新系统并安装xrdp、xorgxrdp
+```bash
+sudo apt update
+sudo apt install -y xrdp xorgxrdp
+```
+
+### 2. 配置xrdp使用Xorg（关键，Wayland会导致剪贴板失效）
+编辑xrdp默认会话配置
+```bash
+sudo nano /etc/xrdp/startwm.sh
+```
+在文件**最开头**添加两行：
+```
+unset DBUS_SESSION_BUS_ADDRESS
+unset XDG_RUNTIME_DIR
+```
+> 保存退出：`Ctrl+O` 回车保存，`Ctrl+X`退出nano
+
+### 3. 关闭Ubuntu默认的Wayland，强制使用Xorg（Ubuntu22.04必做）
+```bash
+sudo nano /etc/gdm3/custom.conf
+```
+找到这一行：
+```
+#WaylandEnable=false
+```
+删掉前面的`#`，修改为：
+```
+WaylandEnable=false
+```
+保存退出，**重启虚拟机**
+```bash
+sudo reboot
+```
+
+> 重启后，登录界面右下角选择：`Ubuntu on Xorg`（Xorg会话，不要选默认Ubuntu(Wayland)）
+
+### 4. 开放xrdp远程桌面端口3389
+```bash
+sudo ufw allow 3389/tcp
+```
+
+### 5. 启动并设置xrdp开机自启
+```bash
+sudo systemctl enable --now xrdp
+```
+查看状态确认正常
+```bash
+systemctl status xrdp
+```
+> 看到 `active (running)` 代表服务正常
+
+### 6. 获取虚拟机IP（后面mstsc连接用）
+```bash
+ip a
+```
+找到eth0网卡的`inet`，例如`172.20.177.17`，记录这个IP。
+
+## 三、Windows宿主机操作：MSTSC远程桌面连接
+1. Win+R，输入 `mstsc` 回车，打开【远程桌面连接】
+2. 计算机：填入刚才Ubuntu的IP，如`172.20.177.17`
+3. 点击【显示选项】→【本地资源】
+    - ✅ 勾选 **剪贴板(L)** （文字复制粘贴核心）
+    - 点击【详细信息(M)】→ 勾选你需要映射的Windows磁盘（C盘/D盘/F盘）→确定
+4. 点击【连接】，输入Ubuntu用户名、密码登录
+> 用户名：你安装Ubuntu时的账号（示例qihoo）
+
+## 四、功能使用说明
+> ⚠️重要：**所有复制粘贴、文件操作，都在mstsc弹出的远程桌面小窗口内操作**，外面Hyper-V大窗口仅用来开机，不要在里面测试剪贴板。
+
+### 1. 文本双向复制粘贴
+1. Windows复制文字（Ctrl+C），鼠标点进远程桌面窗口内Ubuntu终端，Ctrl+V粘贴到虚拟机
+2. 远程Ubuntu内选中文字，Ctrl+C，切回Windows记事本Ctrl+V粘贴回宿主机
+
+### 2. 文件互传（推荐拖拽，避开GNOME+xrdp剪贴板文件bug）
+1. 登录远程桌面后，打开Ubuntu文件管理器，左侧找到 `thinclient_drives`
+2. 进入thinclient_drives，就能看到你勾选的Windows本地磁盘
+3. **直接拖拽文件**：从Windows磁盘目录拖拽文件到Ubuntu桌面/文件夹，完成文件拷贝
+> ❗禁止：不要用Ctrl+C复制文件，再粘贴到Ubuntu文件夹，会出现「准备复制0个文件」的bug
+
+## 五、故障排查清单
+1. 远程桌面黑屏/无法登录
+    - 确认登录时选择的是`Ubuntu on Xorg`，不是Wayland
+    - 确认`systemctl status xrdp`是active状态
+2. 文字复制粘贴失效
+    - mstsc本地资源确认勾选剪贴板
+    - 远程桌面内终端执行`ps aux | grep xrdp-chansrv`，必须存在该进程
+3. thinclient_drives不显示
+    - 关闭mstsc，重新打开，本地资源→详细信息重新勾选磁盘，重连
+4. 无法连接远程桌面
+    - 检查Ubuntu防火墙：`sudo ufw allow 3389/tcp`
+    - 确认虚拟机IP没有变动，虚拟机和宿主机在同一个虚拟交换机网段
+
+## 六、备选方案（可选：SFTP文件传输，独立于xrdp）
+如果不想依赖远程桌面传文件，可以启用SSH，独立传输文件：
+```bash
+sudo apt install openssh-server
+sudo systemctl enable --now ssh
+```
+Windows资源管理器地址栏输入：
+```
+sftp://qihoo@172.20.177.17
+```
+输入Ubuntu密码，直接拖拽文件双向传输。
+
+---
+
+你可以直接全选复制上面内容，保存为 `HyperV-Ubuntu剪贴板文件互传.md`。
+需要我把它精简成一页极简版本吗？
